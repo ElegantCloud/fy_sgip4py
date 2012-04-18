@@ -1,0 +1,4 @@
+SGIP server for SP side
+
+Required Modules:
+	eventlet
