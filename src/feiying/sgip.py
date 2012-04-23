@@ -6,6 +6,34 @@ SGIP message defininitions and operations
 
 from struct import *
 
+# Error Code Definition
+class ErrorCode(object):
+    OK = 0
+    ILLEGAL_LOGIN = 1
+    REPEATED_LOGIN = 2
+    CONNECTION_TOO_MUCH = 3
+    WRONG_LOGIN_TYPE = 4
+    WRONG_PARA_FORMAT = 5
+    INVALID_PHONE_NUMBER = 6
+    WRONG_MSG_ID = 7
+    WRONG_MSG_LENGTH = 8
+    INVALID_SEQ_NUMBER = 9
+    ILLEGAL_GNS_OPERATION = 10
+    NODE_BUSY = 11
+    HOST_UNREACHABLE = 21
+    ROUTE_ERROR = 22
+    NO_ROUTE = 23
+    INVALID_CHARGE_NUMBER = 24
+    USER_UNREACHABLE = 25
+    LOW_PHONE_MEMORY = 26
+    SMS_UNSUPPORTED = 27
+    ERROR_RECV_SMS = 28
+    UNKNOWN_USER = 29
+    FUNCTION_UNSUPPORTED = 30
+    ILLEGAL_DEVICE = 31
+    SYS_FAILED = 32
+    SMS_CENTER_QUEUE_FULL = 33
+
 # Ancestor of all Messages
 class BaseMSG(object):
     fmt = ''  # struct format
@@ -92,6 +120,7 @@ class BaseSGIPResp(BaseSGIPMSG):
 
 # SGIP Bind Message
 class SGIPBind(BaseSGIPMSG):
+    ID = 0x1
     fmt = '!B16s16s8s'
 
     def __init__(self, login_type = 1, login_name = '', login_pwd = '', reserve = ''):
@@ -112,14 +141,36 @@ class SGIPBind(BaseSGIPMSG):
         raw_msg = pack(msg_fmt, self.header.MessageLength, self.header.CommandID, self.header.SequenceNumber[0], self.header.SequenceNumber[1], self.header.SequenceNumber[2], self.LoginType, self.LoginName, self.LoginPassword, self.Reserve) 
         return raw_msg
 
+
 # SGIP Bind Resp Message
 class SGIPBindResp(BaseSGIPResp):
+    ID = 0x80000001
+
     def __init__(self, result = 0, reserve = ''):
         super(SGIPBindResp, self).__init__(result, reserve)
 
 
+# SGIP Unbind Message
+class SGIPUnbind(BaseSGIPMSG):
+    ID = 0x2
+    
+    def _pack(self, msg_fmt):
+        raw_msg = pack(msg_fmt, self.header.MessageLength, self.header.CommandID, self.header.SequenceNumber[0], self.header.SequenceNumber[1], self.header.SequenceNumber[2])
+        return raw_msg
+
+
+# SGIP Unbind Resp Message
+class SGIPUnbindResp(BaseSGIPMSG):
+    ID = 0x80000002
+
+    def _pack(self, msg_fmt):
+        raw_msg = pack(msg_fmt, self.header.MessageLength, self.header.CommandID, self.header.SequenceNumber[0], self.header.SequenceNumber[1], self.header.SequenceNumber[2])
+        return raw_msg
+
+
 # SGIP Deliver Message
 class SGIPDeliver(BaseSGIPMSG):
+    ID = 0x4
     fmt = '!21s21s3BI140s8s'
 
     def __init__(self, user_number = '', sp_number = '', tp_pid = 0, tp_udhi = 0, msg_code = 0, msg_len = 0, msg_content = '', reserve = ''):
@@ -151,12 +202,15 @@ class SGIPDeliver(BaseSGIPMSG):
 
 # SGIP Deliver Resp Message
 class SGIPDeliverResp(BaseSGIPResp):
+    ID = 0x80000004
+        
     def __init__(self, result = 0, reserve = ''):
         super(SGIPDeliverResp, self).__init__(result, reserve)
 
 
 # SGIP Report Message
 class SGIPReport(BaseSGIPMSG):
+    ID = 0x5
     fmt = '!3IB21s2B8s'
 
     def __init__(self, submit_seq_num = [0, 0, 0], report_type = 1, user_number = '', state = 0, error_code = 0, reserve = ''):
@@ -183,6 +237,8 @@ class SGIPReport(BaseSGIPMSG):
 
 # SGIP Report Resp Message
 class SGIPReportResp(BaseSGIPResp):
+    ID = 0x80000005
+    
     def __init__(self, result = 0, reserve = ''):
         super(SGIPReportResp, self).__init__(result, reserve)
 

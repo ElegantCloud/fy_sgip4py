@@ -5,6 +5,53 @@
 """
 from optparse import OptionParser
 import eventlet
+from sgip import *
+
+
+# SGIP Message Processor
+class SGIPProcessor(object):
+    def __init__(self, ssd):
+        self.ssock = ssd
+      
+    # receive data by specified size
+    def __recv(self, size):
+        fd = self.ssock.makefile('r')
+        data = fd.read(size)
+        while len(data) < size:
+           nleft = size - len(data) 
+           t_data = fd.read(nleft)
+           data = data + t_data
+        fd.close()
+        return data
+
+    # read SGIP message header
+    def __read_msg_header(self):
+        raw_data = self.__recv(SGIPHeader.size())
+        header = SGIPHeader()
+        header.unpack(raw_data)
+        return header
+    
+    # process SGIP message
+    def process(self):
+        while True:
+            # read message header
+            header = self.__read_msg_header()
+            
+            if header.CommandID == SGIPBind.ID:
+                pass
+            elif header.CommandID == SGIPDeliver.ID:
+                pass
+            elif header.CommandID == SGIPUnbind.ID:
+                break
+
+        self.ssock.close() 
+
+
+    def __send_sgip_unbind_resp(self, header):
+        pass
+
+
+
 
 def handleMsg(ssd):
     fd = ssd.makefile('rw')
