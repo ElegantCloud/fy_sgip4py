@@ -255,10 +255,12 @@ if __name__ == "__main__":
 
     bind = SGIPBind()
     bind.header = header
-    print 'BIND Msg size: ', SGIPBind.size()
+    print 'BIND Msg size: ', SGIPBind.size(), ' | ', bind.size()
     raw_msg = bind.pack()
     print 'Bind Raw Msg: ', raw_msg
-   
+    print 'Bind Msg ID: ', bind.ID
+
+
     raw_msg = pack('!B16s16s8s', 2, 'starkingwx', 'abc', 'blank')
     bind.unpackBody(raw_msg)
     print "Bind body: ", bind.LoginType, ' ', bind.LoginName, ' ', bind.LoginPassword, ' ', bind.Reserve
