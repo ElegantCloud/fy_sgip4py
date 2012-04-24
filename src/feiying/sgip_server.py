@@ -7,7 +7,9 @@ from optparse import OptionParser
 import eventlet
 from sgip import *
 import oursql
+from binascii import *
 
+# database config
 db_host = 'fy1.richitec.com'
 db_user = 'feiying'
 db_pwd = 'feiying123'
@@ -20,6 +22,7 @@ class SGIPProcessor(object):
       
     # receive data by specified size
     def __recv(self, size):
+        print '...receiving raw data...'
         fd = self.ssock.makefile('r')
         data = fd.read(size)
         while len(data) < size:
@@ -38,13 +41,16 @@ class SGIPProcessor(object):
 
     # read SGIP message header
     def __read_msg_header(self):
+        print 'read msg header'
         raw_data = self.__recv(SGIPHeader.size())
+        print '# header raw data: ', hexlify(raw_data)
         header = SGIPHeader()
         header.unpack(raw_data)
         return header
     
     # process SGIP message
     def process(self):
+        print 'process SGIP message'
         while True:
             # read message header
             header = self.__read_msg_header()
@@ -57,45 +63,55 @@ class SGIPProcessor(object):
                 break
 
         self.ssock.close() 
-
    
     # send SGIP message
     def __send_sgip_msg(self, sgip_msg, header):
+        print 'send sgip msg'
         if sgip_msg == None or header == None:
             return
         seq_num = header.SequenceNumber[:]
         msgHeader = SGIPHeader(SGIPHeader.size() + sgip_msg.size(), sgip_msg.ID, seq_num)
         sgip_msg.header = msgHeader
         raw_data = sgip_msg.pack()
+        print '# send raw data: ', hexlify(raw_data)
         self.__send(raw_data)
 
     def __send_sgip_unbind_resp(self, header):
+        print 'send unbind resp'
         unbindRespMsg = SGIPUnbindResp()
         self.__send_sgip_msg(unbindRespMsg, header)
 
     def __handle_bind_msg(self, header):
+        print 'handle bind msg'
         # continue to receive bind msg body
         raw_data = self.__recv(SGIPBind.size())
+        print '# bind raw data: ', hexlify(raw_data)
         bindMsg = SGIPBind()
         bindMsg.unpackBody(raw_data)
         # skip authentication for SMG
         # send Bind Resp
+        print 'send bind resp'
         bindRespMsg = SGIPBindResp()
         self.__send_sgip_msg(bindRespMsg, header)
 
     def __handle_deliver_msg(self, header):
+        print 'handle deliver msg'
         # continue to receive deliver msg body
-        raw_data = self.__recv(SGIPDeliver.size())
+        deliver_msg_len = header.MessageLength - header.size()
+        raw_data = self.__recv(deliver_msg_len)
+        print '# deliver raw data: ', hexlify(raw_data)
         deliverMsg = SGIPDeliver()
         deliverMsg.unpackBody(raw_data)
         # send Deliver Resp
+        print 'send deliver resp'
         deliverRespMsg = SGIPDeliverResp()
         self.__send_sgip_msg(deliverRespMsg, header)
         # process Deliver Msg content
-        self.__process_deliver_content(deliverMsg) 
+        self._process_deliver_content(deliverMsg) 
 
     # do actual work according to the content of deliver message
-    def __process_deliver_content(self, deliverMsg):
+    def _process_deliver_content(self, deliverMsg):
+        print 'process deliver content'
         userNumber = deliverMsg.UserNumber
         msg_content = deliverMsg.MessageContent
         status = ''
@@ -110,16 +126,10 @@ class SGIPProcessor(object):
         dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
         with dbconn.cursor(oursql.DictCursor) as cursor:
             print 'updating business status in database'
-            sql = "UPDATE fy_user SET userkey = 'asdf' AND business_status = '%s' WHERE username = '%s'" % (status, userNumber)
-            cursor.execute(sql, plain_query = True)
+            sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
+            print 'sql: ', sql
+            cursor.execute(sql, (status, userNumber))
         dbconn.close()
-
-
-    
-
-
-
-
 
 def handleMsg(ssd):
     print 'client connected'
