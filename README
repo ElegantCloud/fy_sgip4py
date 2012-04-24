@@ -1,4 +1,5 @@
 SGIP server for SP side
 
-Required Modules:
+Required External Modules:
 	eventlet
+	oursql
