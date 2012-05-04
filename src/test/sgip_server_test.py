@@ -34,8 +34,9 @@ class TestSGIPServer(unittest.TestCase):
         self.assertEqual(respHeader.CommandID, sgip.SGIPBindResp.ID)
         self.assertEqual(bindRespMsg.Result, 0)
         # send deliver msg
-        deliverMsg = sgip.SGIPDeliver(self.user_number, '10010', 0, 0, 0, 4, self.msg_content, '')
-        header = sgip.SGIPHeader(sgip.SGIPHeader.size() + deliverMsg.size(), sgip.SGIPDeliver.ID)
+        deliverMsg = sgip.SGIPDeliver(self.user_number, '10010', 0, 0, 0, len(self.msg_content), self.msg_content, '')
+        deliverMsg.contentLength = len(self.msg_content)
+        header = sgip.SGIPHeader(sgip.SGIPHeader.size() + deliverMsg.mySize(), sgip.SGIPDeliver.ID)
         deliverMsg.header = header
         raw_data = deliverMsg.pack()
         self.socket.sendall(raw_data)

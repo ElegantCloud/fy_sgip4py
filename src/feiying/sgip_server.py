@@ -98,9 +98,12 @@ class SGIPProcessor(object):
         print 'handle deliver msg'
         # continue to receive deliver msg body
         deliver_msg_len = header.MessageLength - header.size()
+        print ' deliver msg len: %d' % deliver_msg_len
         raw_data = self.__recv(deliver_msg_len)
         print '# deliver raw data: ', hexlify(raw_data)
         deliverMsg = SGIPDeliver()
+        deliverMsg.contentLength = deliver_msg_len - SGIPDeliver.size()
+        print 'msg content len: %d - SGIPDeliver origin size: %d' % (deliverMsg.contentLength, SGIPDeliver.size())
         deliverMsg.unpackBody(raw_data)
         # send Deliver Resp
         print 'send deliver resp'
@@ -114,6 +117,7 @@ class SGIPProcessor(object):
         print 'process deliver content'
         userNumber = deliverMsg.UserNumber
         msg_content = deliverMsg.MessageContent
+        print 'msg content: %s' % msg_content
         status = ''
         if 'DZFY' in msg_content:
             # update the business status as opened
@@ -125,7 +129,7 @@ class SGIPProcessor(object):
         # update database
         dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
         with dbconn.cursor(oursql.DictCursor) as cursor:
-            print 'updating business status in database'
+            print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
             sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
             print 'sql: ', sql
             cursor.execute(sql, (status, userNumber))

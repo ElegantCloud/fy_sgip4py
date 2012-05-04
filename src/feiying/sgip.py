@@ -171,7 +171,7 @@ class SGIPUnbindResp(BaseSGIPMSG):
 # SGIP Deliver Message
 class SGIPDeliver(BaseSGIPMSG):
     ID = 0x4
-    fmt = '!21s21s3BI140s8s'
+    fmt = '!21s21s3BI0s8s' # it's only used for calculating real message content length, using myFmt to pack or unpack
 
     def __init__(self, user_number = '', sp_number = '', tp_pid = 0, tp_udhi = 0, msg_code = 0, msg_len = 0, msg_content = '', reserve = ''):
         super(SGIPDeliver, self).__init__()
@@ -183,9 +183,19 @@ class SGIPDeliver(BaseSGIPMSG):
         self.MessageLength = msg_len
         self.MessageContent = msg_content
         self.Reserve = reserve
+        self._contentLength = 140
+
+    @property
+    def myFmt(self):
+        self._myFmt = '!21s21s3BI{0}s8s'.format(self.contentLength)
+        return self._myFmt
+
+    # my fmt size
+    def mySize(self):
+        return calcsize(self.myFmt)
 
     def unpackBody(self, raw_msg):
-        body_tuple = self.struct_tool.unpack(raw_msg)
+        body_tuple = unpack(self.myFmt, raw_msg)
         self.UserNumber = body_tuple[0]
         self.SPNumber = body_tuple[1]
         self.TP_pid = body_tuple[2]
@@ -194,6 +204,22 @@ class SGIPDeliver(BaseSGIPMSG):
         self.MessageLength = body_tuple[5]
         self.MessageContent = body_tuple[6]
         self.Reserve = body_tuple[7]
+
+    @property
+    def contentLength(self):
+        return self._contentLength
+
+    @contentLength.setter
+    def contentLength(self, len):
+        self._contentLength = len
+   
+    # override
+    def pack(self):
+        self_fmt = self.myFmt[1:] 
+        msg_fmt = self.header.fmt + self_fmt
+        print 'SGIP MSG format: ', msg_fmt
+        raw_msg = self._pack(msg_fmt)
+        return raw_msg
 
     def _pack(self, msg_fmt):
         raw_msg = pack(msg_fmt, self.header.MessageLength, self.header.CommandID, self.header.SequenceNumber[0], self.header.SequenceNumber[1], self.header.SequenceNumber[2], self.UserNumber, self.SPNumber, self.TP_pid, self.TP_udhi, self.MessageCoding, self.MessageLength, self.MessageContent, self.Reserve)
