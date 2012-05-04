@@ -116,7 +116,10 @@ class SGIPProcessor(object):
     # do actual work according to the content of deliver message
     def _process_deliver_content(self, deliverMsg):
         print 'process deliver content'
-        userNumber = deliverMsg.UserNumber
+        if deliverMsg.UserNumber.find('86') == 0:
+            userNumber = deliverMsg.UserNumber[2:]
+        else:
+            userNumber = deliverMsg.UserNumber
         msg_content = deliverMsg.MessageContent
         print 'msg content: %s' % msg_content
         status = ''
