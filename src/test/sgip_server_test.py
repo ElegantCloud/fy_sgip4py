@@ -10,7 +10,7 @@ import unittest
 class TestSGIPServer(unittest.TestCase):
     def setUp(self):
         self.msg_content = 'DZFY'
-        self.user_number = '13813005146'
+        self.user_number = '13813005100'
         self.socket = socket.socket()
         ip = '192.168.1.133'
         port = 8801
