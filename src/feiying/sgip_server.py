@@ -164,6 +164,8 @@ def main():
             print "accepted ", address
             if address in SMG_ADDRS:
                 pool.spawn_n(handleMsg, new_sock)
+            else:
+                print 'illegal SMG addr: %s' % address
         except (SystemExit, KeyboardInterrupt):
             print 'server caught exception'
             break;
