@@ -146,8 +146,11 @@ class SGIPProcessor(object):
                 if rows == 0:
                     # phone number doesn't exist, insert new one
                     print "user doesn't exist, insert it"
-                    sql = "INSERT INTO `fy_user` (`username`, `userkey`, `business_status`) VALUES(?, ?, ?) "
-                    cursor.execute(sql, (userNumber, 'asdf', status))
+                    sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, 'asdf', ?)"
+                    try:
+                        cursor.execute(sql, (userNumber, status))
+                    except:
+                        pass
             dbconn.close()
 
 def handleMsg(ssd):
