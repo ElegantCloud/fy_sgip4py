@@ -15,7 +15,7 @@ class TestSGIPBindResp(unittest.TestCase):
 class TestSGIPDeliver(unittest.TestCase):
     def setUp(self):
         self.sgip_deliver = sgip.SGIPDeliver()
-        self.raw_data = pack('!21s21s3BI140s8s', '13813005146', '10010', 1, 2, 3, 140, 'nice day', 'temp')
+        self.raw_data = pack('!21s21s3BI197s8s', '13813005146', '10010', 1, 2, 3, 140, 'nice day', 'temp')
 
     def test_unpack(self):
         self.sgip_deliver.unpackBody(self.raw_data)

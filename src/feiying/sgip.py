@@ -171,7 +171,7 @@ class SGIPUnbindResp(BaseSGIPMSG):
 # SGIP Deliver Message
 class SGIPDeliver(BaseSGIPMSG):
     ID = 0x4
-    fmt = '!21s21s3BI140s8s'
+    fmt = '!21s21s3BI4s8s'
 
     def __init__(self, user_number = '', sp_number = '', tp_pid = 0, tp_udhi = 0, msg_code = 0, msg_len = 0, msg_content = '', reserve = ''):
         super(SGIPDeliver, self).__init__()
