@@ -136,12 +136,17 @@ class SGIPProcessor(object):
 
         # update database
         if status != '':
-                dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
+            dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
             with dbconn.cursor(oursql.DictCursor) as cursor:
                 print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
                 sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
-                print 'sql: ', sql
-                cursor.execute(sql, (status, userNumber))
+                rows = cursor.execute(sql, (status, userNumber))
+                print 'affected rows: %d' % rows
+                if rows == 0:
+                    # phone number doesn't exist, insert new one
+                    print "user doesn't exist, insert it"
+                    sql = "INSERT INTO `fy_user` (`username`, `userkey`, `business_status`) VALUES(?, ?, ?) "
+                    cursor.execute(sql, (userNumber, 'asdf', status))
             dbconn.close()
 
 def handleMsg(ssd):
