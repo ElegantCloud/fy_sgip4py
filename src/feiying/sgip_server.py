@@ -167,10 +167,11 @@ def main():
         try:
             new_sock, address = server.accept()
             print "accepted ", address
-            if address in SMG_ADDRS:
+            if address[0] in SMG_ADDRS:
                 pool.spawn_n(handleMsg, new_sock)
             else:
-                print 'illegal SMG addr: %s' % address
+                print 'illegal SMG addr: %s - close' % address[0]
+                new_sock.close()
         except (SystemExit, KeyboardInterrupt):
             print 'server caught exception'
             break;
