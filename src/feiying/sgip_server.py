@@ -58,6 +58,7 @@ class SGIPProcessor(object):
                 self.__handle_bind_msg(header) 
             elif header.CommandID == SGIPDeliver.ID:
                 self.__handle_deliver_msg(header) 
+                break
             elif header.CommandID == SGIPUnbind.ID:
                 self.__send_sgip_unbind_resp(header)
                 break
