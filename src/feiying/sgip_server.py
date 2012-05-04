@@ -15,6 +15,10 @@ db_user = 'feiying'
 db_pwd = 'feiying123'
 db_name = 'feiying'
 
+# allowed SMG addresses
+SMG_ADDRS = ('220.195.192.85')
+
+
 # SGIP Message Processor
 class SGIPProcessor(object):
     def __init__(self, ssd):
@@ -123,21 +127,22 @@ class SGIPProcessor(object):
         msg_content = deliverMsg.MessageContent
         print 'msg content: %s' % msg_content
         status = ''
-        if 'DZFY' in msg_content:
+        if 'DZFY' == msg_content:
             # update the business status as opened
             status = 'opened'
-        elif 'TDFY' in msg_content:
+        elif 'TDFY' == msg_content:
             # update the business status as unopened
             status = 'unopened'
 
         # update database
-        dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
-        with dbconn.cursor(oursql.DictCursor) as cursor:
-            print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
-            sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
-            print 'sql: ', sql
-            cursor.execute(sql, (status, userNumber))
-        dbconn.close()
+        if status != '':
+                dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
+            with dbconn.cursor(oursql.DictCursor) as cursor:
+                print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
+                sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
+                print 'sql: ', sql
+                cursor.execute(sql, (status, userNumber))
+            dbconn.close()
 
 def handleMsg(ssd):
     print 'client connected'
@@ -157,7 +162,8 @@ def main():
         try:
             new_sock, address = server.accept()
             print "accepted ", address
-            pool.spawn_n(handleMsg, new_sock)
+            if address in SMG_ADDRS:
+                pool.spawn_n(handleMsg, new_sock)
         except (SystemExit, KeyboardInterrupt):
             print 'server caught exception'
             break;
