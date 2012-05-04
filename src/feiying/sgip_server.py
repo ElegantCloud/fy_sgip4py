@@ -16,7 +16,7 @@ db_pwd = 'feiying123'
 db_name = 'feiying'
 
 # allowed SMG addresses
-SMG_ADDRS = ('220.195.192.85',)
+SMG_ADDRS = ('220.195.192.85', '192.168.1.133')
 
 
 # SGIP Message Processor
@@ -140,8 +140,9 @@ class SGIPProcessor(object):
             with dbconn.cursor(oursql.DictCursor) as cursor:
                 print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
                 sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
-                rows = cursor.execute(sql, (status, userNumber))
-                print 'affected rows: %d' % rows
+                cursor.execute(sql, (status, userNumber))
+                rows = cursor.rowcount
+                print 'affected rows: {0}'.format(rows)
                 if rows == 0:
                     # phone number doesn't exist, insert new one
                     print "user doesn't exist, insert it"
