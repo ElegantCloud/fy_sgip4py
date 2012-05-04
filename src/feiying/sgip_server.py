@@ -58,6 +58,7 @@ class SGIPProcessor(object):
                 self.__handle_bind_msg(header) 
             elif header.CommandID == SGIPDeliver.ID:
                 self.__handle_deliver_msg(header) 
+                break
             elif header.CommandID == SGIPUnbind.ID:
                 self.__send_sgip_unbind_resp(header)
                 break
@@ -97,12 +98,13 @@ class SGIPProcessor(object):
     def __handle_deliver_msg(self, header):
         print 'handle deliver msg'
         # continue to receive deliver msg body
-        #deliver_msg_len = header.MessageLength - header.size()
-	deliver_msg_len = SGIPDeliver.size()
-	print ' deliver msg len: %d' % deliver_msg_len
+        deliver_msg_len = header.MessageLength - header.size()
+        print ' deliver msg len: %d' % deliver_msg_len
         raw_data = self.__recv(deliver_msg_len)
         print '# deliver raw data: ', hexlify(raw_data)
         deliverMsg = SGIPDeliver()
+        deliverMsg.contentLength = deliver_msg_len - SGIPDeliver.size()
+        print 'msg content len: %d - SGIPDeliver origin size: %d' % (deliverMsg.contentLength, SGIPDeliver.size())
         deliverMsg.unpackBody(raw_data)
         # send Deliver Resp
         print 'send deliver resp'
@@ -116,6 +118,7 @@ class SGIPProcessor(object):
         print 'process deliver content'
         userNumber = deliverMsg.UserNumber
         msg_content = deliverMsg.MessageContent
+        print 'msg content: %s' % msg_content
         status = ''
         if 'DZFY' in msg_content:
             # update the business status as opened
