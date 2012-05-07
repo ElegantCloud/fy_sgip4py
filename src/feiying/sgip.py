@@ -168,6 +168,93 @@ class SGIPUnbindResp(BaseSGIPMSG):
         return raw_msg
 
 
+# SGIP Submit Message
+class SGIPSubmit(BaseSGIPMSG):
+    ID = 0x3
+    fmt = '!21s21sB21s5s10sB6s6s3B16s16s5BI0s8s' # it's only used for calculating real message content length, using myFmt to pack or unpack
+
+    def __init__(self, sp_number = '', charge_number = '000000000000000000000', user_count = 1, user_number = '', corp_id = '', service_type = '', fee_type = 0, fee_value = '0', given_value = '0', agent_flag = 1, morelateto_mt_flag = 1, priority = 9, expire_time = '', schedule_time = '', report_flag = 0, tp_pid = 0, tp_udhi = 0, msg_coding = 15, msg_type = 0, msg_len = 0, msg_content = '', reserve = ''):
+        super(SGIPSubmit, self).__init__()
+        self.SPNumber = sp_number
+        self.ChargeNumber = charge_number
+        self.UserCount = user_count
+        if user_number[0:2] != '86':
+            user_number = '86' + user_number
+        self.UserNumber = user_number
+        self.CorpId = corp_id
+        self.ServiceType = service_type
+        self.FeeType = fee_type
+        self.FeeValue = fee_value
+        self.GivenValue = given_value
+        self.AgentFlag = agent_flag
+        self.MorelatetoMTFlag = morelateto_mt_flag
+        self.Priority = priority
+        self.ExpireTime = expire_time
+        self.ScheduleTime = schedule_time
+        self.ReportFlag = report_flag
+        self.TP_pid = tp_pid
+        self.TP_udhi = tp_udhi
+        self.MessageCoding = msg_coding
+        self.MessageType = msg_type
+        self.MessageLength = msg_len
+        self.MessageContent = msg_content
+        self.Reserve = reserve
+
+    @property
+    def myFmt(self):
+        self._myFmt = '!21s21sB21s5s10sB6s6s3B16s16s5BI{0}s8s'.format(self.MessageLength)
+        return self._myFmt
+
+    # my fmt size
+    def mySize(self):
+        return calcsize(self.myFmt)
+
+    def unpackBody(self, raw_msg):
+        body_tuple = unpack(self.myFmt, raw_msg)
+        self.SPNumber = body_tuple[0]
+        self.ChargeNumber = body_tuple[1]
+        self.UserCount = body_tuple[2]
+        self.UserNumber = body_tuple[3]
+        self.CorpId = body_tuple[4]
+        self.ServiceType = body_tuple[5]
+        self.FeeType = body_tuple[6]
+        self.FeeValue = body_tuple[7]
+        self.GivenValue = body_tuple[8]
+        self.AgentFlag = body_tuple[9]
+        self.MorelatetoMTFlag = body_tuple[10]
+        self.Priority = body_tuple[11]
+        self.ExpireTime = body_tuple[12]
+        self.ScheduleTime = body_tuple[13]
+        self.ReportFlag = body_tuple[14]
+        self.TP_pid = body_tuple[15]
+        self.TP_udhi = body_tuple[16]
+        self.MessageCoding = body_tuple[17]
+        self.MessageType = body_tuple[18]
+        self.MessageLength = body_tuple[19]
+        self.MessageContent = body_tuple[20]
+        self.Reserve = body_tuple[21]
+
+    # override
+    def pack(self):
+        self_fmt = self.myFmt[1:] 
+        msg_fmt = self.header.fmt + self_fmt
+        print 'SGIP MSG format: ', msg_fmt
+        raw_msg = self._pack(msg_fmt)
+        return raw_msg
+
+    def _pack(self, msg_fmt):
+        raw_msg = pack(msg_fmt, self.header.MessageLength, self.header.CommandID, self.header.SequenceNumber[0], self.header.SequenceNumber[1], self.header.SequenceNumber[2], self.SPNumber, self.ChargeNumber, self.UserCount, self.UserNumber, self.CorpId, self.ServiceType, self.FeeType, self.FeeValue, self.GivenValue, self.AgentFlag, self.MorelatetoMTFlag, self.Priority, self.ExpireTime, self.ScheduleTime, self.ReportFlag, self.TP_pid, self.TP_udhi, self.MessageCoding, self.MessageType, self.MessageLength, self.MessageContent, self.Reserve)
+        return raw_msg
+
+
+# SGIP Submit Resp
+class SGIPSubmitResp(BaseSGIPResp):
+    ID = 0x80000003
+        
+    def __init__(self, result = 0, reserve = ''):
+        super(SGIPSubmitResp, self).__init__(result, reserve)
+
+
 # SGIP Deliver Message
 class SGIPDeliver(BaseSGIPMSG):
     ID = 0x4
@@ -183,7 +270,7 @@ class SGIPDeliver(BaseSGIPMSG):
         self.MessageLength = msg_len
         self.MessageContent = msg_content
         self.Reserve = reserve
-        self._contentLength = 140
+        self._contentLength = 0
 
     @property
     def myFmt(self):
@@ -267,6 +354,7 @@ class SGIPReportResp(BaseSGIPResp):
     
     def __init__(self, result = 0, reserve = ''):
         super(SGIPReportResp, self).__init__(result, reserve)
+
 
 
 ## for test
