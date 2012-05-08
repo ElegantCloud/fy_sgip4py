@@ -5,6 +5,25 @@
 SMS Client
 """
 import urllib
+import logging
+import logging.handlers
+
+# config logger
+log_name = 'sms_client'
+logger = logging.getLogger(log_name)
+logger.setLevel(logging.DEBUG)
+lh = logging.handlers.TimedRotatingFileHandler('/tmp/'+ log_name + '.log', when = 'midnight')
+lh.setLevel(logging.INFO)
+lf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s : %(message)s')
+lh.setFormatter(lf)
+logger.addHandler(lh)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s : %(message)s')
+console.setFormatter(formatter)
+logger.addHandler(console)
+
 
 class SMSClient(object):
     instance = None
@@ -30,13 +49,12 @@ class SMSClient(object):
 def send_sms(phone_number, message):
     sc = SMSClient.get_instance()
     ret = sc.send_sms(phone_number, message)
-    print 'send sms return: ', ret
+    logger.info('send sms return: %s', ret)
     return ret
 
 # test
 if __name__ == "__main__":
     msg = '你好China'
     ret = send_sms('13813005146', msg)
-    print 'send ok. return: ', ret
 
 

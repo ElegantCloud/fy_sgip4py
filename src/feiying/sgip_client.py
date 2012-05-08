@@ -10,6 +10,27 @@ import eventlet
 from eventlet.green import socket
 from sgip import *
 from binascii import *
+import logging
+import logging.handlers
+
+# config logger
+log_name = 'sgip_client'
+logger = logging.getLogger(log_name)
+logger.setLevel(logging.DEBUG)
+lh = logging.handlers.TimedRotatingFileHandler('/tmp/'+ log_name + '.log', when = 'midnight')
+lh.setLevel(logging.INFO)
+lf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s : %(message)s')
+lh.setFormatter(lf)
+logger.addHandler(lh)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s : %(message)s')
+console.setFormatter(formatter)
+logger.addHandler(console)
+
+
+
 
 class SMSClient(object):
 
@@ -26,12 +47,12 @@ class SMSClient(object):
         self.__csock = socket.socket()
         ip = socket.gethostbyname(self._host)
         self.__csock.connect((ip, self._port))
-        print '%s connected' % self._host
+        logger.info('%s connected' % self._host)
 
     def _close_sgip_connection(self):
         if self.__csock != None:
             self.__csock.close()
-        print 'connection to %s closed' % self._host
+        logger.info('connection to %s closed' % self._host)
 
     def gen_seq_number(self):
     	seq_num1 = 3055122870
@@ -42,7 +63,7 @@ class SMSClient(object):
         return [seq_num1, seq_num2, seq_num3]
 
     def send_data(self, data):
-	print 'send data: ', hexlify(data)
+	logger.info('send data: %s', hexlify(data))
         fd = self.__csock.makefile('w')
         fd.write(data)
         fd.flush()
@@ -51,19 +72,19 @@ class SMSClient(object):
     def recv_data(self, size):
         fd = self.__csock.makefile('r')
         data = fd.read(size)
-        print 'recv raw data: ', hexlify(data)
+        logger.info('recv raw data: %s', hexlify(data))
         i = 0 
         while len(data) < size:
             nleft = size - len(data)
             t_data = fd.read(nleft)
-            #print 'i: ', i, ' data: ', hexlify(t_data) 
+            #logger.info('i: ' + i + ' data: ' + hexlify(t_data) )
             i += 1
 	    data = data + t_data
         fd.close()
         return data
 
     def _bind(self):
-        print 'do bind'
+        logger.info('do bind')
         # send bind msg
         bindMsg = SGIPBind(1, self._username, self._pwd)
         header = SGIPHeader(SGIPHeader.size() + bindMsg.size(), SGIPBind.ID, self.gen_seq_number())
@@ -72,11 +93,11 @@ class SMSClient(object):
         self.send_data(raw_data)
         # recv bind resp msg
         resp_header_data = self.recv_data(SGIPHeader.size())
-        print 'header raw data: ', hexlify(resp_header_data) 
+        logger.info('header raw data: %s', hexlify(resp_header_data) )
         
         respHeader = SGIPHeader()
         respHeader.unpack(resp_header_data)
-        print 'resp command id: {0}'.format(respHeader.CommandID)
+        logger.info('resp command id: {0}'.format(respHeader.CommandID))
         resp_body_data = self.recv_data(SGIPBindResp.size())
         bindRespMsg = SGIPBindResp()
         bindRespMsg.unpackBody(resp_body_data)
@@ -86,7 +107,7 @@ class SMSClient(object):
             return False
     
     def _unbind(self):
-        print 'do unbind'
+        logger.info('do unbind')
         unbindMsg = SGIPUnbind()
         header = SGIPHeader(SGIPHeader.size() + unbindMsg.size(), SGIPUnbind.ID)
         unbindMsg.header = header
@@ -94,7 +115,7 @@ class SMSClient(object):
         self.send_data(raw_data)
 
     def _submit(self, userNumber, message):
-        print 'do submit'
+        logger.info('do submit')
         # send submit msg
         submitMsg = SGIPSubmit(sp_number = self._sp_number, user_number = userNumber, corp_id = self._corp_id, msg_len = len(message), msg_content = message)
         header = SGIPHeader(SGIPHeader.size() + submitMsg.mySize(), SGIPSubmit.ID)
@@ -109,7 +130,7 @@ class SMSClient(object):
         respheader = SGIPHeader()
         respheader.unpack(resp_header_data)
         if respheader.CommandID == SGIPSubmitResp.ID and submitRespMsg.Result == 0:
-            print 'sms submitted ok'
+            logger.info('sms submitted ok')
 
     def send_sms(self, user_number, message):
         try:
@@ -119,10 +140,10 @@ class SMSClient(object):
                 # submit msg
                 self._submit(user_number, message)
             else:
-                print 'bind failed'
+                logger.info('bind failed')
             self._unbind()
         except socket.error as (errno, strerror):
-            print "socket error({0}): {1}".format(errno, strerror)
+            logger.info("socket error({0}): {1}".format(errno, strerror))
         finally:
             self._close_sgip_connection()
    
