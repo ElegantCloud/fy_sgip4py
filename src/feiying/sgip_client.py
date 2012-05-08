@@ -9,6 +9,7 @@ from datetime import datetime
 import eventlet
 from eventlet.green import socket
 from sgip import *
+from binascii import *
 
 class SMSClient(object):
 
@@ -49,9 +50,11 @@ class SMSClient(object):
     def recv_data(self, size):
         fd = self.__csock.makefile('r')
         data = fd.read(size)
+        print 'recv raw data: ', hexlify(data) 
         while len(data) < size:
             nleft = size - len(data)
             t_data = fd.read(nleft)
+            #print 'data: ', hexlify(data) 
             data = data + t_data
         fd.close()
         return data
@@ -66,16 +69,19 @@ class SMSClient(object):
         self.send_data(raw_data)
         # recv bind resp msg
         resp_header_data = self.recv_data(SGIPHeader.size())
+        print 'header raw data: ', hexlify(resp_header_data) 
+        
+        respHeader = SGIPHeader()
+        respHeader.unpack(resp_header_data)
+        print 'resp command id: {0}'.format(respHeader.CommandID)
         resp_body_data = self.recv_data(SGIPBindResp.size())
         bindRespMsg = SGIPBindResp()
         bindRespMsg.unpackBody(resp_body_data)
-        respHeader = SGIPHeader()
-        respHeader.unpack(resp_header_data)
         if respHeader.CommandID == SGIPBindResp.ID and bindRespMsg.Result == 0:
             return True
         else:
             return False
-
+    
     def _unbind(self):
         print 'do unbind'
         unbindMsg = SGIPUnbind()
