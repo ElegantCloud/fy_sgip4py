@@ -59,8 +59,8 @@ class SGIPProcessor(object):
         header = SGIPHeader()
         header.unpack(raw_data)
     	print '# msg len: ', header.MessageLength
-	    print '# command id: ', header.CommandID
-	    print '# sequence number: {0} {1} {2}'.format(header.SequenceNumber[0], header.SequenceNumber[1], header.SequenceNumber[2])
+	print '# command id: ', header.CommandID
+	print '# sequence number: {0} {1} {2}'.format(header.SequenceNumber[0], header.SequenceNumber[1], header.SequenceNumber[2])
         return header
     
     # process SGIP message
@@ -167,7 +167,7 @@ class SGIPProcessor(object):
                         else:
                             # update user business status as opened for user is subscribing 
                             self._update_status(cursor, userNumber, status)
-			                send_sms(userNumber, DZFY_OK)
+                            send_sms(userNumber, DZFY_OK)
                     elif msg_content == 'TDFY':
                         if 'unopened' == exist_status:
                             # notice user that he hasn't subscribed, no need to unsubscribe 
@@ -176,7 +176,7 @@ class SGIPProcessor(object):
                         else:
                             # update user business_status as unopened for user is unsubscribing
                             self._update_status(cursor, userNumber, status)
-			                send_sms(userNumber, TDFY_OK)
+                            send_sms(userNumber, TDFY_OK)
                 else:
                     # no user found
                     if msg_content == 'DZFY':
@@ -187,7 +187,7 @@ class SGIPProcessor(object):
                             cursor.execute(sql, (userNumber, status))
                         except:
                             pass
-			            send_sms(userNumber, DZFY_OK)
+                        send_sms(userNumber, DZFY_OK)
 
                     elif msg_content == 'TDFY':
                         # notice user that he hasn't subscribed, no need to unsubscribe
