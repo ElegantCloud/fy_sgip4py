@@ -50,6 +50,9 @@ class SGIPProcessor(object):
         print '# header raw data: ', hexlify(raw_data)
         header = SGIPHeader()
         header.unpack(raw_data)
+	print '# msg len: ', header.MessageLength
+	print '# command id: ', header.CommandID
+	print '# sequence number: {0} {1} {2}'.format(header.SequenceNumber[0], header.SequenceNumber[1], header.SequenceNumber[2])
         return header
     
     # process SGIP message
@@ -93,7 +96,11 @@ class SGIPProcessor(object):
         bindMsg = SGIPBind()
         bindMsg.unpackBody(raw_data)
         # skip authentication for SMG
-        # send Bind Resp
+       	print 'login type: ', bindMsg.LoginType
+	print 'login name: ', bindMsg.LoginName
+	print 'login pwd: ', bindMsg.LoginPassword 
+
+	# send Bind Resp
         print 'send bind resp'
         bindRespMsg = SGIPBindResp()
         self.__send_sgip_msg(bindRespMsg, header)

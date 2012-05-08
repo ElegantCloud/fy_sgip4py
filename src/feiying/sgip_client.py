@@ -13,10 +13,10 @@ from binascii import *
 
 class SMSClient(object):
 
-    def __init__(self, host, port, node_id, username, pwd, sp_number):
+    def __init__(self, host, port, corp_id, username, pwd, sp_number):
         self._host = host
         self._port = port
-        self._node_id = node_id
+        self._corp_id = corp_id
         self._username = username
         self._pwd = pwd
         self._seq_id = 0
@@ -34,11 +34,11 @@ class SMSClient(object):
         print 'connection to %s closed' % self._host
 
     def gen_seq_number(self):
-        seq_num1 = int(self._node_id)
-        today = datetime.today()
+	seq_num1 = 3055122870
+	today = datetime.today()
         seq_num2 = (((today.month * 100 + today.day) * 100 + today.hour) * 100 + today.minute) * 100 + today.second
-        self._seq_id += 1
         seq_num3 = self._seq_id
+        self._seq_id += 1
         return [seq_num1, seq_num2, seq_num3]
 
     def send_data(self, data):
@@ -51,12 +51,14 @@ class SMSClient(object):
     def recv_data(self, size):
         fd = self.__csock.makefile('r')
         data = fd.read(size)
-        print 'recv raw data: ', hexlify(data) 
+        print 'recv raw data: ', hexlify(data)
+	i = 0 
         while len(data) < size:
             nleft = size - len(data)
             t_data = fd.read(nleft)
-            #print 'data: ', hexlify(data) 
-            data = data + t_data
+            #print 'i: ', i, ' data: ', hexlify(t_data) 
+            i += 1
+	    data = data + t_data
         fd.close()
         return data
 
@@ -94,7 +96,7 @@ class SMSClient(object):
     def _submit(self, userNumber, message):
         print 'do submit'
         # send submit msg
-        submitMsg = SGIPSubmit(sp_number = self._sp_number, user_number = userNumber, corp_id = self._node_id, msg_len = len(message), msg_content = message)
+        submitMsg = SGIPSubmit(sp_number = self._sp_number, user_number = userNumber, corp_id = self._corp_id, msg_len = len(message), msg_content = message)
         header = SGIPHeader(SGIPHeader.size() + submitMsg.mySize(), SGIPSubmit.ID)
         submitMsg.header = header
         raw_data = submitMsg.pack()
@@ -127,6 +129,6 @@ class SMSClient(object):
 
 ## for test
 if __name__ == "__main__":
-    client = SMSClient(host = '127.0.0.1', port = 8801, node_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
+    client = SMSClient(host = '220.195.192.85', port = 8801, corp_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
     client.send_sms('18655165434', '你好China')
 
