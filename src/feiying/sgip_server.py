@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
  SGIP server for receiving SGIP message from SMG
@@ -8,6 +9,8 @@ import eventlet
 from sgip import *
 import oursql
 from binascii import *
+from sms_client import *
+
 
 # database config
 db_host = 'fy1.richitec.com'
@@ -18,6 +21,11 @@ db_name = 'feiying'
 # allowed SMG addresses
 SMG_ADDRS = ('220.195.192.85', '127.0.0.1')
 
+# respone messages
+DZFY_OK = '尊敬的用户，您已成功订购飞影业务，请进入http://fy1.richitec.com/feiying/mobile下载客户端'
+TDFY_OK = '尊敬的用户，您已成功退订飞影业务，感谢您的使用。'
+DZFY_FAIL = '尊敬的用户，您已订购过飞影业务，请勿重复订购。'
+TDFY_FAIL = '尊敬的用户，您尚未开通飞影业务，无法执行退订操作。'
 
 # SGIP Message Processor
 class SGIPProcessor(object):
@@ -140,10 +148,50 @@ class SGIPProcessor(object):
             # update the business status as unopened
             status = 'unopened'
 
-        # update database
         if status != '':
             dbconn = oursql.connect(host = db_host, user = db_user, passwd = db_pwd, db = db_name)
+
             with dbconn.cursor(oursql.DictCursor) as cursor:
+                # check user status
+                print 'check user status'
+                sql = "SELECT business_status FROM fy_user WHERE username = ?"
+                cursor.execute(sql, (UserNumber,))
+                result = cursor.fetchone()
+                if result != None:
+                    exist_status = result['business_status']
+                    if msg_content == 'DZFY':
+                        if 'opened' == exist_status:
+                            # notice user that he has subscribed 
+                            send_sms(userNumber, DZFY_FAIL) 
+                        else:
+                            # update user business status as opened for user is subscribing 
+                            self._update_status(cursor, userNumber, status)
+                    elif msg_content == 'TDFY':
+                        if 'unopened' == exist_status:
+                            # notice user that he hasn't subscribed, no need to unsubscribe 
+                            send_sms(userNumber, TDFY_FAIL)
+                        else:
+                            # update user business_status as unopened for user is unsubscribing
+                            self._update_status(cursor, userNumber, status)
+                else:
+                    # no user found
+                    if msg_content == 'DZFY':
+                        # insert new user and set business_status as opened
+                        print "user doesn't exist, insert it as opened"
+                            sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, 'asdf', ?)"
+                        try:
+                            cursor.execute(sql, (userNumber, status))
+                        except:
+                            pass
+
+                    elif msg_content == 'TDFY':
+                        # notice user that he hasn't subscribed, no need to unsubscribe
+                        send_sms(userNumber, TDFY_FAIL)
+
+
+
+                """
+                # update database
                 print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
                 sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
                 cursor.execute(sql, (status, userNumber))
@@ -157,8 +205,16 @@ class SGIPProcessor(object):
                         cursor.execute(sql, (userNumber, status))
                     except:
                         pass
+                """
             dbconn.close()
 
+    # update business status in database
+    def _update_status(self, cursor, userNumber, status):
+        # update database
+        print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
+        sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
+        cursor.execute(sql, (status, userNumber))
+    
 def handleMsg(ssd):
     print 'client connected'
     processor = SGIPProcessor(ssd)
