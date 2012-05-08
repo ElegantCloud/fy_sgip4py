@@ -111,7 +111,7 @@ class SMSClient(object):
     def send_sms(self, user_number, message):
         try:
             self._init_sgip_connection()
-            bindRet =self._bind() 
+            bindRet = self._bind() 
             if bindRet:
                 # submit msg
                 self._submit(user_number, message)
@@ -126,6 +126,6 @@ class SMSClient(object):
 
 ## for test
 if __name__ == "__main__":
-    client = SMSClient(host = '220.195.192.85', port = 8801, node_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
+    client = SMSClient(host = '127.0.0.1', port = 8801, node_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
     client.send_sms('18655165434', '你好China')
 

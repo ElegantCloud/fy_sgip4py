@@ -16,7 +16,7 @@ db_pwd = 'feiying123'
 db_name = 'feiying'
 
 # allowed SMG addresses
-SMG_ADDRS = ('220.195.192.85', '192.168.1.133')
+SMG_ADDRS = ('220.195.192.85', '127.0.0.1')
 
 
 # SGIP Message Processor
