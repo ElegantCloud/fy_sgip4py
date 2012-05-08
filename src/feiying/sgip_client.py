@@ -52,7 +52,7 @@ class SMSClient(object):
         fd = self.__csock.makefile('r')
         data = fd.read(size)
         print 'recv raw data: ', hexlify(data)
-	    i = 0 
+        i = 0 
         while len(data) < size:
             nleft = size - len(data)
             t_data = fd.read(nleft)
