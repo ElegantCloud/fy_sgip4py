@@ -155,6 +155,7 @@ class SGIPProcessor(object):
                     if msg_content == 'DZFY':
                         if 'opened' == exist_status:
                             # notice user that he has subscribed 
+                            print 'DZFY fail'
                             send_sms(userNumber, DZFY_FAIL) 
                         else:
                             # update user business status as opened for user is subscribing 
@@ -162,6 +163,7 @@ class SGIPProcessor(object):
                     elif msg_content == 'TDFY':
                         if 'unopened' == exist_status:
                             # notice user that he hasn't subscribed, no need to unsubscribe 
+                            print 'TDFY fail'
                             send_sms(userNumber, TDFY_FAIL)
                         else:
                             # update user business_status as unopened for user is unsubscribing
@@ -179,6 +181,7 @@ class SGIPProcessor(object):
 
                     elif msg_content == 'TDFY':
                         # notice user that he hasn't subscribed, no need to unsubscribe
+                        print "user doesn't exist, TDFY fail"
                         send_sms(userNumber, TDFY_FAIL)
 
 
