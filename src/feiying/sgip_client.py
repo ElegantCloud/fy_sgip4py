@@ -42,6 +42,7 @@ class SMSClient(object):
         return [seq_num1, seq_num2, seq_num3]
 
     def send_data(self, data):
+	print 'send data: ', hexlify(data)
         fd = self.__csock.makefile('w')
         fd.write(data)
         fd.flush()
@@ -111,7 +112,7 @@ class SMSClient(object):
     def send_sms(self, user_number, message):
         try:
             self._init_sgip_connection()
-            bindRet =self._bind() 
+            bindRet = self._bind() 
             if bindRet:
                 # submit msg
                 self._submit(user_number, message)
