@@ -59,8 +59,8 @@ class SGIPProcessor(object):
         header = SGIPHeader()
         header.unpack(raw_data)
     	print '# msg len: ', header.MessageLength
-	    print '# command id: ', header.CommandID
-	    print '# sequence number: {0} {1} {2}'.format(header.SequenceNumber[0], header.SequenceNumber[1], header.SequenceNumber[2])
+	print '# command id: ', header.CommandID
+	print '# sequence number: {0} {1} {2}'.format(header.SequenceNumber[0], header.SequenceNumber[1], header.SequenceNumber[2])
         return header
     
     # process SGIP message
