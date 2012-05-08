@@ -34,8 +34,8 @@ class SMSClient(object):
         print 'connection to %s closed' % self._host
 
     def gen_seq_number(self):
-	seq_num1 = 3055122870
-	today = datetime.today()
+    	seq_num1 = 3055122870
+	    today = datetime.today()
         seq_num2 = (((today.month * 100 + today.day) * 100 + today.hour) * 100 + today.minute) * 100 + today.second
         seq_num3 = self._seq_id
         self._seq_id += 1
@@ -52,7 +52,7 @@ class SMSClient(object):
         fd = self.__csock.makefile('r')
         data = fd.read(size)
         print 'recv raw data: ', hexlify(data)
-	i = 0 
+	    i = 0 
         while len(data) < size:
             nleft = size - len(data)
             t_data = fd.read(nleft)
