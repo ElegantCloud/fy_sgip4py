@@ -155,7 +155,7 @@ class SGIPProcessor(object):
                 # check user status
                 print 'check user status'
                 sql = "SELECT business_status FROM fy_user WHERE username = ?"
-                cursor.execute(sql, (UserNumber,))
+                cursor.execute(sql, (userNumber,))
                 result = cursor.fetchone()
                 if result != None:
                     exist_status = result['business_status']
@@ -167,6 +167,7 @@ class SGIPProcessor(object):
                         else:
                             # update user business status as opened for user is subscribing 
                             self._update_status(cursor, userNumber, status)
+			    send_sms(userNumber, DZFY_OK)
                     elif msg_content == 'TDFY':
                         if 'unopened' == exist_status:
                             # notice user that he hasn't subscribed, no need to unsubscribe 
@@ -175,40 +176,24 @@ class SGIPProcessor(object):
                         else:
                             # update user business_status as unopened for user is unsubscribing
                             self._update_status(cursor, userNumber, status)
+			    send_sms(userNumber, TDFY_OK)
                 else:
                     # no user found
                     if msg_content == 'DZFY':
                         # insert new user and set business_status as opened
                         print "user doesn't exist, insert it as opened"
-                            sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, 'asdf', ?)"
+                        sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, 'asdf', ?)"
                         try:
                             cursor.execute(sql, (userNumber, status))
                         except:
                             pass
+			send_sms(userNumber, DZFY_OK)
 
                     elif msg_content == 'TDFY':
                         # notice user that he hasn't subscribed, no need to unsubscribe
                         print "user doesn't exist, TDFY fail"
                         send_sms(userNumber, TDFY_FAIL)
 
-
-
-                """
-                # update database
-                print 'updating business status in database - status: %s userNumber: %s' % (status, userNumber)
-                sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
-                cursor.execute(sql, (status, userNumber))
-                rows = cursor.rowcount
-                print 'affected rows: {0}'.format(rows)
-                if rows == 0:
-                    # phone number doesn't exist, insert new one
-                    print "user doesn't exist, insert it"
-                    sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, 'asdf', ?)"
-                    try:
-                        cursor.execute(sql, (userNumber, status))
-                    except:
-                        pass
-                """
             dbconn.close()
 
     # update business status in database

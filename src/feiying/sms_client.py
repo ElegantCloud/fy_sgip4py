@@ -30,6 +30,7 @@ class SMSClient(object):
 def send_sms(phone_number, message):
     sc = SMSClient.get_instance()
     ret = sc.send_sms(phone_number, message)
+    print 'send sms return: ', ret
     return ret
 
 # test
