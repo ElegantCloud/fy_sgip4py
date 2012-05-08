@@ -75,7 +75,7 @@ class SGIPProcessor(object):
         logger.info('# header raw data: %s', hexlify(raw_data))
         header = SGIPHeader()
         header.unpack(raw_data)
-    	logger.iinfo('# msg len: %d', header.MessageLength)
+    	logger.info('# msg len: %d', header.MessageLength)
         logger.info('# command id: %d', header.CommandID)
         logger.info('# sequence number: {0} {1} {2}'.format(header.SequenceNumber[0], header.SequenceNumber[1], header.SequenceNumber[2]))
         return header
