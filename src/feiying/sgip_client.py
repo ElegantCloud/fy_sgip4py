@@ -63,7 +63,7 @@ class SMSClient(object):
         return [seq_num1, seq_num2, seq_num3]
 
     def send_data(self, data):
-	logger.info('send data: %s', hexlify(data))
+        logger.info('send data: %s', hexlify(data))
         fd = self.__csock.makefile('w')
         fd.write(data)
         fd.flush()
