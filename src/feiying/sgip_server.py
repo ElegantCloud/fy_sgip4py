@@ -38,9 +38,9 @@ class SGIPProcessor(object):
         fd = self.ssock.makefile('r')
         data = fd.read(size)
         while len(data) < size:
-           nleft = size - len(data) 
-           t_data = fd.read(nleft)
-           data = data + t_data
+            nleft = size - len(data) 
+            t_data = fd.read(nleft)
+            data = data + t_data
         fd.close()
         return data
 
