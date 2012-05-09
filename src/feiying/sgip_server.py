@@ -54,15 +54,6 @@ class SGIPProcessor(object):
         logger.info('...receiving raw data...')
         data = self.ssock.recv(size)
         logger.info('recv data: %s', hexlify(data))
-        """
-        if data == '':
-            return data
-	while len(data) < size:
-            nleft = size - len(data) 
-            t_data = self.ssock.recv(nleft)
-            logger.info('recv t_data: %s', hexlify(t_data))
-            data = data + t_data
-        """
         return data
 
     # send data
