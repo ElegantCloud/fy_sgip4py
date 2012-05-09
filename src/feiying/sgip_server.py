@@ -52,13 +52,17 @@ class SGIPProcessor(object):
     # receive data by specified size
     def __recv(self, size):
         logger.info('...receiving raw data...')
-        fd = self.ssock.makefile('r')
-        data = fd.read(size)
-        while len(data) < size:
+        data = self.ssock.recv(size)
+        logger.info('recv data: %s', hexlify(data))
+        """
+        if data == '':
+            return data
+	while len(data) < size:
             nleft = size - len(data) 
-            t_data = fd.read(nleft)
+            t_data = self.ssock.recv(nleft)
+            logger.info('recv t_data: %s', hexlify(t_data))
             data = data + t_data
-        fd.close()
+        """
         return data
 
     # send data
@@ -73,6 +77,8 @@ class SGIPProcessor(object):
         logger.info('read msg header')
         raw_data = self.__recv(SGIPHeader.size())
         logger.info('# header raw data: %s', hexlify(raw_data))
+        if raw_data == '':
+            return None
         header = SGIPHeader()
         header.unpack(raw_data)
     	logger.info('# msg len: %d', header.MessageLength)
@@ -86,6 +92,10 @@ class SGIPProcessor(object):
         while True:
             # read message header
             header = self.__read_msg_header()
+            if header == None:
+                logger.info('No header received, close the socket')
+                break
+
             if header.CommandID == SGIPBind.ID:
                 self.__handle_bind_msg(header) 
             elif header.CommandID == SGIPDeliver.ID:
