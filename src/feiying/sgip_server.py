@@ -9,7 +9,7 @@ import eventlet
 from sgip import *
 import oursql
 from binascii import *
-from sms_client import *
+from sgip_client import *
 import logging
 import logging.handlers
 

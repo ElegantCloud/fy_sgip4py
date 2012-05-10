@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# coding: gbk
+# -*- coding: utf-8 -*-
 
 """
 SGIP Message Send
@@ -116,6 +116,7 @@ class SMSClient(object):
 
     def _submit(self, userNumber, message):
         logger.info('do submit')
+        message = message.decode('utf-8').encode('gbk') 
         # send submit msg
         submitMsg = SGIPSubmit(sp_number = self._sp_number, user_number = userNumber, corp_id = self._corp_id, msg_len = len(message), msg_content = message)
         header = SGIPHeader(SGIPHeader.size() + submitMsg.mySize(), SGIPSubmit.ID)
@@ -146,10 +147,22 @@ class SMSClient(object):
             logger.info("socket error({0}): {1}".format(errno, strerror))
         finally:
             self._close_sgip_connection()
-   
+
+    instance = None
+    @classmethod
+    def get_instance(cls):
+        if cls.instance == None:
+            cls.instance = SMSClient(host = '220.195.192.85', port = 8801, corp_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398') 
+        return cls.instance
+
+def send_sms(phone_number, message):
+    sc = SMSClient.get_instance()
+    sc.send_sms(phone_number, message)
+    logger.info('sms send ok')
+
 
 ## for test
 if __name__ == "__main__":
-    client = SMSClient(host = '220.195.192.85', port = 8801, corp_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
-    client.send_sms('18655165434', '你好China')
+    #client = SMSClient(host = '220.195.192.85', port = 8801, corp_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
+    send_sms('18655165434', '你好China')
 
