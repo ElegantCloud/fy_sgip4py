@@ -73,13 +73,12 @@ class SMSClient(object):
         fd = self.__csock.makefile('r')
         data = fd.read(size)
         logger.info('recv raw data: %s', hexlify(data))
-        i = 0 
+        """
         while len(data) < size:
             nleft = size - len(data)
             t_data = fd.read(nleft)
-            #logger.info('i: ' + i + ' data: ' + hexlify(t_data) )
-            i += 1
 	    data = data + t_data
+        """
         fd.close()
         return data
 
@@ -94,11 +93,14 @@ class SMSClient(object):
         # recv bind resp msg
         resp_header_data = self.recv_data(SGIPHeader.size())
         logger.info('header raw data: %s', hexlify(resp_header_data) )
-        
+        if resp_header_data == '':
+            return False 
         respHeader = SGIPHeader()
         respHeader.unpack(resp_header_data)
         logger.info('resp command id: {0}'.format(respHeader.CommandID))
         resp_body_data = self.recv_data(SGIPBindResp.size())
+        if resp_body_data == '':
+            return False 
         bindRespMsg = SGIPBindResp()
         bindRespMsg.unpackBody(resp_body_data)
         if respHeader.CommandID == SGIPBindResp.ID and bindRespMsg.Result == 0:
@@ -125,7 +127,13 @@ class SMSClient(object):
         self.send_data(raw_data)
         # recv submit msg
         resp_header_data = self.recv_data(SGIPHeader.size())
+        if resp_header_data == '':
+            logger.info('sms submit failed')
+            return 
         resp_body_data = self.recv_data(SGIPSubmitResp.size())
+        if resp_body_data == '':
+            logger.info('sms submit failed')
+            return 
         submitRespMsg = SGIPSubmitResp()
         submitRespMsg.unpackBody(resp_body_data)
         respheader = SGIPHeader()
@@ -158,7 +166,6 @@ class SMSClient(object):
 def send_sms(phone_number, message):
     sc = SMSClient.get_instance()
     sc.send_sms(phone_number, message)
-    logger.info('sms send ok')
 
 
 ## for test
