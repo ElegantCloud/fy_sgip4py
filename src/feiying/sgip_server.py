@@ -23,10 +23,10 @@ db_name = 'feiying'
 SMG_ADDRS = ('220.195.192.85', '127.0.0.1')
 
 # respone messages
-DZFY_OK = '尊敬的客户：您已成功订购飞影业务，请进入http://fy1.richitec.com/feiying/mobile下载客户端'
-TDFY_OK = '尊敬的客户：您已成功退订飞影业务，感谢您的使用。'
-DZFY_FAIL = '尊敬的客户：您已订购过飞影业务，请勿重复订购。'
-TDFY_FAIL = '尊敬的客户：您尚未开通飞影业务，无法执行退订操作。'
+DZFY_OK = '尊敬的客户：您已成功订购飞影业务，请进入http://fy1.richitec.com/feiying/mobile下载客户端 安徽联通'
+TDFY_OK = '尊敬的客户：您已成功退订飞影业务，感谢您的使用。 安徽联通'
+DZFY_FAIL = '尊敬的客户：您已订购过飞影业务，请勿重复订购。 安徽联通'
+TDFY_FAIL = '尊敬的客户：您尚未开通飞影业务，无法执行退订操作。 安徽联通'
 
 # config logger
 log_name = 'sgip_server'
