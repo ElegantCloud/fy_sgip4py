@@ -156,7 +156,7 @@ class SGIPProcessor(object):
             userNumber = deliverMsg.UserNumber[2:]
         else:
             userNumber = deliverMsg.UserNumber
-        msg_content = deliverMsg.MessageContent
+        msg_content = deliverMsg.MessageContent.upper()
         logger.info('msg content: %s' % msg_content)
         status = ''
         if 'DZFY' == msg_content:
