@@ -12,6 +12,7 @@ from sgip import *
 from binascii import *
 import logging
 import logging.handlers
+from optparse import OptionParser
 
 # config logger
 log_name = 'sgip_client'
@@ -168,8 +169,16 @@ def send_sms(phone_number, message):
     sc.send_sms(phone_number, message)
 
 
-## for test
-if __name__ == "__main__":
-    #client = SMSClient(host = '220.195.192.85', port = 8801, corp_id = '22870', username = 'fy', pwd = 'f75y', sp_number = '1065583398')
-    send_sms('18655165434', '你好China')
+def main():
+    parser = OptionParser()
+    parser.add_option("-n", "--number", dest = "phone_number", help = "phone number to send")
+    parser.add_option("-m", "--message", dest = "message", help = "message content")
+    (options, args) = parser.parse_args()
+    if options.phone_number == None or options.message == None:
+        logger.info('please input phone number or message')
+        return
+    send_sms(options.phone_number, options.message)
 
+
+if __name__ == "__main__":
+    main()
