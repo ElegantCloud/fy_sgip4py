@@ -201,11 +201,12 @@ class SGIPProcessor(object):
                     if msg_content == 'DZFY':
                         # insert new user and set business_status as opened
                         logger.info("user doesn't exist, insert it as opened")
-                        userkey = 'u' + userNumber + '-' + datetime.utcnow() 
+                        userkey = 'u{0}'.format(datetime.utcnow())
                         sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, ?, ?)"
                         try:
                             cursor.execute(sql, (userNumber, userkey, status))
-                        except:
+                        except oursql.Error as err:
+                            logger.info('error: %d %s', err.errno, err.message)
                             pass
                         send_sms(userNumber, DZFY_OK)
 
