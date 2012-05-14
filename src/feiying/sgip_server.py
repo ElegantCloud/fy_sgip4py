@@ -12,6 +12,7 @@ from binascii import *
 from sgip_client import *
 import logging
 import logging.handlers
+from datetime import datetime
 
 # database config
 db_host = 'fy1.richitec.com'
@@ -200,9 +201,10 @@ class SGIPProcessor(object):
                     if msg_content == 'DZFY':
                         # insert new user and set business_status as opened
                         logger.info("user doesn't exist, insert it as opened")
-                        sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, 'asdf', ?)"
+                        userkey = 'u' + userNumber + '-' + datetime.utcnow() 
+                        sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, ?, ?)"
                         try:
-                            cursor.execute(sql, (userNumber, status))
+                            cursor.execute(sql, (userNumber, userkey, status))
                         except:
                             pass
                         send_sms(userNumber, DZFY_OK)
@@ -218,7 +220,7 @@ class SGIPProcessor(object):
     def _update_status(self, cursor, userNumber, status):
         # update database
         logger.info('updating business status in database - status: %s userNumber: %s' % (status, userNumber))
-        sql = "UPDATE `fy_user` SET `userkey` = 'asdf', `business_status` = ? WHERE `username` = ? " 
+        sql = "UPDATE `fy_user` SET `business_status` = ? WHERE `username` = ? " 
         cursor.execute(sql, (status, userNumber))
     
 def handleMsg(ssd):
