@@ -222,9 +222,10 @@ class SGIPProcessor(object):
         # update database
         logger.info('updating business status in database - status: %s userNumber: %s' % (status, userNumber))
         if status == 'opened':
-            sql = "UPDATE `fy_user` SET `business_status` = ? AND `bu_open_time` = NOW() WHERE `username` = ? "
+            sql = "UPDATE `fy_user` SET `business_status`=?, `bu_open_time`=NOW() WHERE `username`=?" 
         else:
-            sql = "UPDATE `fy_user` SET `business_status` = ? AND `bu_close_time` = NOW() WHERE `username` = ? "
+            sql = "UPDATE `fy_user` SET `business_status`=?, `bu_close_time`=NOW() WHERE `username`=?"
+        logger.info('sql: %s', sql)
         cursor.execute(sql, (status, userNumber))
     
 def handleMsg(ssd):
