@@ -130,19 +130,23 @@ class SMSClient(object):
         resp_header_data = self.recv_data(SGIPHeader.size())
         if resp_header_data == '':
             logger.info('sms submit failed')
-            return 
+            return 1 
         resp_body_data = self.recv_data(SGIPSubmitResp.size())
         if resp_body_data == '':
             logger.info('sms submit failed')
-            return 
+            return 1
         submitRespMsg = SGIPSubmitResp()
         submitRespMsg.unpackBody(resp_body_data)
         respheader = SGIPHeader()
         respheader.unpack(resp_header_data)
         if respheader.CommandID == SGIPSubmitResp.ID and submitRespMsg.Result == 0:
             logger.info('sms submitted ok')
+            return 0
+        else
+            return 1
 
     def send_sms(self, user_number, message):
+        retFlag = 0
         try:
             self._init_sgip_connection()
             bindRet = self._bind() 
@@ -151,11 +155,14 @@ class SMSClient(object):
                 self._submit(user_number, message)
             else:
                 logger.info('bind failed')
+                retFlag = 1
             self._unbind()
         except socket.error as (errno, strerror):
             logger.info("socket error({0}): {1}".format(errno, strerror))
+            retFlag = 2
         finally:
             self._close_sgip_connection()
+        return retFlag
 
     instance = None
     @classmethod
@@ -166,7 +173,7 @@ class SMSClient(object):
 
 def send_sms(phone_number, message):
     sc = SMSClient.get_instance()
-    sc.send_sms(phone_number, message)
+    return sc.send_sms(phone_number, message)
 
 
 def main():
@@ -176,9 +183,9 @@ def main():
     (options, args) = parser.parse_args()
     if options.phone_number == None or options.message == None:
         logger.info('please input phone number or message')
-        return
-    send_sms(options.phone_number, options.message)
+        return 3
+    return send_sms(options.phone_number, options.message)
 
 
 if __name__ == "__main__":
-    main()
+    return main()
