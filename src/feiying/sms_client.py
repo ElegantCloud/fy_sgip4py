@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SMS Client
+SMS Client - using proxy
 """
 import urllib
 import logging
