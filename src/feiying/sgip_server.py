@@ -202,7 +202,7 @@ class SGIPProcessor(object):
                         # insert new user and set business_status as opened
                         logger.info("user doesn't exist, insert it as opened")
                         userkey = 'u{0}'.format(datetime.utcnow())
-                        sql = "INSERT INTO fy_user(username, userkey, business_status) VALUES(?, ?, ?)"
+                        sql = "INSERT INTO fy_user(username, userkey, business_status, bu_open_time) VALUES(?, ?, ?, NOW())"
                         try:
                             cursor.execute(sql, (userNumber, userkey, status))
                         except oursql.Error as err:
@@ -221,7 +221,10 @@ class SGIPProcessor(object):
     def _update_status(self, cursor, userNumber, status):
         # update database
         logger.info('updating business status in database - status: %s userNumber: %s' % (status, userNumber))
-        sql = "UPDATE `fy_user` SET `business_status` = ? WHERE `username` = ? " 
+        if status == 'opened':
+            sql = "UPDATE `fy_user` SET `business_status` = ? AND `bu_open_time` = NOW() WHERE `username` = ? "
+        else:
+            sql = "UPDATE `fy_user` SET `business_status` = ? AND `bu_close_time` = NOW() WHERE `username` = ? "
         cursor.execute(sql, (status, userNumber))
     
 def handleMsg(ssd):
